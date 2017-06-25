@@ -1,4 +1,4 @@
-/* 
+/*
 
 	Copyright 2017 Danny Kunz
 
@@ -13,11 +13,12 @@
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 	See the License for the specific language governing permissions and
 	limitations under the License.
-	
+
 
 */
 package org.omnaest.metabolics.kegg;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.omnaest.metabolics.kegg.model.KeggEnzyme;
 
@@ -25,11 +26,30 @@ public class KeggUtilsTest
 {
 
 	@Test
+	@Ignore
 	public void testGetEnzyme() throws Exception
 	{
 		KeggEnzyme enzyme = KeggUtils.getEnzyme("6.2.1.1");
 
 		System.out.println(enzyme);
+	}
+
+	@Test
+	@Ignore
+	public void testGetEnzymeIds() throws Exception
+	{
+		System.out.println(KeggUtils.getEnzymeIds());
+	}
+
+	@Test
+	//@Ignore
+	public void testLoadAllEnzymes() throws Exception
+	{
+		KeggUtils	.getEnzymeIds()
+					.stream()
+					.parallel()
+					.peek(System.out::println)
+					.forEach(enzymeId -> KeggUtils.getEnzyme(enzymeId));
 	}
 
 }

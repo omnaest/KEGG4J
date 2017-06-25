@@ -82,13 +82,34 @@ public class KeggUtils
 
 	public static KeggEnzyme getEnzyme(String enzymeId)
 	{
-		String reactionText = new TextWithFileCache(CACHE_FOLDER + "/reaction" + enzymeId + ".txt")	.setProvider(() -> KeggRestApiUtils.getEnzyme(enzymeId))
+		String reactionText = new TextWithFileCache(CACHE_FOLDER + "/enzyme" + enzymeId + ".txt")	.setProvider(() -> KeggRestApiUtils.getEnzyme(enzymeId))
 																									.get();
 		KeggEnzyme keggEnzyme = new KeggEnzyme().setId(enzymeId);
 		TextHandler textHandler = new TextHandler(new EnzymeNameHandler(keggEnzyme), new EnzymeGenesHandler(keggEnzyme));
 		textHandler.handle(reactionText);
 
 		return keggEnzyme;
+	}
+
+	public static Set<String> getEnzymeIds()
+	{
+		Set<String> enzymeIds = new LinkedHashSet<>();
+		List<String> reactionLinesList = new TextListWithFileCache(CACHE_FOLDER + "/enzymes.txt")	.setProvider(() -> KeggRestApiUtils.getEnzymesList())
+																									.get();
+		for (String enzymeLine : reactionLinesList)
+		{
+			Matcher matcher = Pattern	.compile("ec\\:([A-Za-z0-9\\.]+)")
+										.matcher(enzymeLine);
+			if (matcher.find())
+			{
+				String enzymeId = matcher.group(1);
+				if (StringUtils.isNotBlank(enzymeId))
+				{
+					enzymeIds.add(enzymeId);
+				}
+			}
+		}
+		return enzymeIds;
 	}
 
 }

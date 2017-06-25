@@ -46,4 +46,9 @@ public class KeggRestApiUtils
 	{
 		return RestHelper.requestGet(baseUrl + "get/ec:" + enzymeId);
 	}
+
+	public static List<String> getEnzymesList()
+	{
+		return Arrays.asList(StringUtils.split(RestHelper.requestGet(baseUrl + "list/enzyme"), "\r\n"));
+	}
 }
