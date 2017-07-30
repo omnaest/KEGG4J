@@ -37,6 +37,11 @@ public class KeggRestApiUtils
 		return RestHelper.requestGet(baseUrl + "get/rn:" + reactionId);
 	}
 
+	public static String getChemicalCompound(String compoundId)
+	{
+		return RestHelper.requestGet(baseUrl + "get/cpd:" + compoundId);
+	}
+
 	public static List<String> getReactionsList()
 	{
 		return Arrays.asList(StringUtils.split(RestHelper.requestGet(baseUrl + "list/reaction"), "\r\n"));
@@ -84,7 +89,7 @@ public class KeggRestApiUtils
 		return Arrays.asList(StringUtils.split(RestHelper.requestGet(baseUrl + "list/organism"), "\r\n"));
 	}
 
-	public static List<String> getCompoundList()
+	public static List<String> getChemicalCompoundList()
 	{
 		return Arrays.asList(StringUtils.split(RestHelper.requestGet(baseUrl + "list/compound"), "\r\n"));
 	}

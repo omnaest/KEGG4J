@@ -18,9 +18,15 @@
 */
 package org.omnaest.metabolics.kegg;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang.StringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.omnaest.metabolics.kegg.model.KeggEnzyme;
+import org.omnaest.metabolics.kegg.utils.JSONHelper;
 
 public class KeggUtilsTest
 {
@@ -42,14 +48,73 @@ public class KeggUtilsTest
 	}
 
 	@Test
-	//@Ignore
+	@Ignore
 	public void testLoadAllEnzymes() throws Exception
 	{
 		KeggUtils	.getEnzymeIds()
 					.stream()
 					.parallel()
+					.limit(10)
+					.map(enzymeId -> KeggUtils.getEnzyme(enzymeId))
 					.peek(System.out::println)
-					.forEach(enzymeId -> KeggUtils.getEnzyme(enzymeId));
+					.count();
+	}
+
+	@Test
+	@Ignore
+	public void testLoadAllReactions() throws Exception
+	{
+		KeggUtils	.getReactions()
+					.peek(reaction -> System.out.println(JSONHelper.prettyPrint(reaction)))
+					.count();
+	}
+
+	@Test
+	@Ignore
+	public void testLoadAllChemicals() throws Exception
+	{
+		KeggUtils	.getChemicalCompounds()
+					.peek(compound -> System.out.println(JSONHelper.prettyPrint(compound)))
+					.count();
+	}
+
+	@Test
+	@Ignore
+	public void testGetOrganisms() throws Exception
+	{
+		Set<String> organisms = KeggUtils	.getOrganisms()
+											.stream()
+											.filter(organism -> organism.getGroups()
+																		.contains("Saccharomycetes"))
+											.map(organism -> organism.getId())
+											.collect(Collectors.toSet());
+		System.out.println(JSONHelper.prettyPrint(organisms));
+	}
+
+	@Test
+	@Ignore
+	public void testEnzymesOfSaccharomycetes() throws Exception
+	{
+		Set<String> organisms = KeggUtils	.getOrganisms()
+											.stream()
+											.filter(organism -> organism.getGroups()
+																		.contains("Saccharomycetes"))
+											.map(organism -> organism.getId())
+											.collect(Collectors.toSet());
+		List<KeggEnzyme> enzymesOfFungi = KeggUtils	.getEnzymeIds()
+													.stream()
+													.map(enzymeId -> KeggUtils.getEnzyme(enzymeId))
+													.filter(enzyme -> enzyme.getGenes()
+																			.stream()
+																			.anyMatch(gene -> organisms.contains(StringUtils.lowerCase(gene.getOrganism()))))
+													.collect(Collectors.toList());
+
+		enzymesOfFungi	.stream()
+						.map(enzyme -> enzyme.getId())
+						.map(id -> ".withEnzymes(Enzymes.EC_" + id.replaceAll("[\\.]", "_") + ")")
+						.collect(Collectors.toList())
+						.forEach(System.out::println);
+
 	}
 
 }

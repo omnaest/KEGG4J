@@ -38,14 +38,20 @@ public class KeggCompound
 	private List<String>	atom		= new ArrayList<>();
 	private List<String>	bond		= new ArrayList<>();
 
+	public boolean hasName()
+	{
+		return this.name != null;
+	}
+
 	public String getId()
 	{
 		return this.id;
 	}
 
-	public void setId(String id)
+	public KeggCompound setId(String id)
 	{
 		this.id = id;
+		return this;
 	}
 
 	public String getName()
@@ -176,6 +182,12 @@ public class KeggCompound
 	public void setBond(List<String> bond)
 	{
 		this.bond = bond;
+	}
+
+	public KeggCompound addSynonym(String synonym)
+	{
+		this.synonyms.add(synonym);
+		return this;
 	}
 
 }

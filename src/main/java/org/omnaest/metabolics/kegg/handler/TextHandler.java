@@ -51,28 +51,33 @@ public class TextHandler
 		//
 		String[] lines = StringUtils.split(text, "\r\n");
 		String currentKey = null;
-		for (String line : lines)
+		if (lines != null)
 		{
-			if (StringUtils.startsWith(line, " "))
+			for (String line : lines)
 			{
-				String[] keyAndBody = StringUtils.split(line, " ", 1);
-				if (keyAndBody.length >= 1)
+				if (StringUtils.startsWith(line, " "))
 				{
-					handleValue(eventKeyToHandlerMap, currentKey, keyAndBody[0]);
+					String[] keyAndBody = StringUtils.split(line, " ", 1);
+					if (keyAndBody.length >= 1)
+					{
+						handleValue(eventKeyToHandlerMap, currentKey, keyAndBody[0]);
+					}
 				}
-			} else if (StringUtils.startsWith(line, "///"))
-			{
-				break;
-			} else
-			{
-				String[] keyAndBody = StringUtils.split(line, " ", 2);
-				if (keyAndBody.length >= 1)
+				else if (StringUtils.startsWith(line, "///"))
 				{
-					currentKey = keyAndBody[0];
+					break;
 				}
-				if (keyAndBody.length >= 2)
+				else
 				{
-					handleValue(eventKeyToHandlerMap, currentKey, keyAndBody[1]);
+					String[] keyAndBody = StringUtils.split(line, " ", 2);
+					if (keyAndBody.length >= 1)
+					{
+						currentKey = keyAndBody[0];
+					}
+					if (keyAndBody.length >= 2)
+					{
+						handleValue(eventKeyToHandlerMap, currentKey, keyAndBody[1]);
+					}
 				}
 			}
 		}

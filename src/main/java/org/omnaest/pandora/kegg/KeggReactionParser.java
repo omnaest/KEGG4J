@@ -16,9 +16,8 @@
 
 
 */
-package org.omnaest.metabolics.kegg;
+package org.omnaest.pandora.kegg;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -32,24 +31,21 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.omnaest.metabolics.kegg.KeggUtils;
+import org.omnaest.metabolics.kegg.handler.TextHandler.Handler;
 import org.omnaest.metabolics.kegg.intermodel.IMChemical;
 import org.omnaest.metabolics.kegg.intermodel.IMEnzyme;
 import org.omnaest.metabolics.kegg.intermodel.IMReaction;
 import org.omnaest.metabolics.kegg.model.KeggReaction;
 import org.omnaest.metabolics.kegg.utils.JSONHelper;
-import org.omnaest.metabolics.kegg.utils.filecache.TextListWithFileCache;
-import org.omnaest.metabolics.kegg.wrapper.IMChemicalTemplateWrapper;
-import org.omnaest.pandora.kegg.KeggReactionParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class KeggReactionsParserTest
+public class KeggReactionParser
 {
-	private static Logger LOG = LoggerFactory.getLogger(KeggReactionsParserTest.class);
+	private static final Logger LOG = LoggerFactory.getLogger(KeggReactionParser.class);
 
-	public static class ChemicalMultiplierPrefixMapper implements Function<String, Stream<String>>
+	private final class ChemicalMultiplierPrefixMapper implements Function<String, Stream<String>>
 	{
 		@Override
 		public Stream<String> apply(String chemical)
@@ -79,33 +75,190 @@ public class KeggReactionsParserTest
 		}
 	}
 
-	private KeggReactionParser parser = new KeggReactionParser();
-
-	@Test
-	@Ignore
-	public void testFileCache()
+	private static abstract class AbstractHandler implements Handler
 	{
-		List<String> elements = new TextListWithFileCache("reactions.txt")	.setProvider(() -> Arrays.asList("a", "b", "cd"))
-																			.get();
-		System.out.println(elements);
+		protected KeggReaction keggReaction;
+
+		public AbstractHandler(KeggReaction keggReaction)
+		{
+			super();
+			this.keggReaction = keggReaction;
+		}
+
 	}
 
-	@Test
-	@Ignore
-	public void testIMReactionTemplateChemicalsParsing()
+	private static class EntryHandler extends AbstractHandler
 	{
-		List<IMChemical> chemicals = this.convertToIMChemical(Arrays.asList(StringUtils.splitByWholeSeparator("Hydrogen peroxide + NADH + H+", " + ")));
-		for (IMChemical chemical : chemicals)
+
+		public EntryHandler(KeggReaction keggReaction)
 		{
-			IMChemicalTemplateWrapper chemicalTemplateWrapper = new IMChemicalTemplateWrapper(chemical);
-			String compatibleName = chemicalTemplateWrapper.getEnumCompatibleName();
-			System.out.println(compatibleName);
+			super(keggReaction);
+		}
+
+		@Override
+		public String getEventKey()
+		{
+			return "ENTRY";
+		}
+
+		@Override
+		public void handle(String line)
+		{
+			if (StringUtils.isNotBlank(line))
+			{
+				String cleanedLine = StringUtils.remove(line, "Reaction");
+				this.keggReaction.setId(StringUtils.trim(cleanedLine));
+			}
 		}
 	}
 
-	@Test
-	@Ignore
-	public void testCodeGeneration() throws IOException
+	private class NameHandler extends AbstractHandler
+	{
+
+		public NameHandler(KeggReaction keggReaction)
+		{
+			super(keggReaction);
+		}
+
+		@Override
+		public String getEventKey()
+		{
+			return "NAME";
+		}
+
+		@Override
+		public void handle(String line)
+		{
+			if (StringUtils.isNotBlank(line))
+			{
+				String cleanedLine = StringUtils.trim(line);
+				this.keggReaction.setName(cleanedLine);
+			}
+		}
+	}
+
+	private class DefinitionHandler extends AbstractHandler
+	{
+		public DefinitionHandler(KeggReaction keggReaction)
+		{
+			super(keggReaction);
+		}
+
+		@Override
+		public String getEventKey()
+		{
+			return "DEFINITION";
+		}
+
+		@Override
+		public void handle(String line)
+		{
+			if (StringUtils.isNotBlank(line))
+			{
+				String cleanedLine = StringUtils.trim(line);
+				this.keggReaction.setDefinition(cleanedLine);
+			}
+		}
+	}
+
+	private class EquationHandler extends AbstractHandler
+	{
+		public EquationHandler(KeggReaction keggReaction)
+		{
+			super(keggReaction);
+		}
+
+		@Override
+		public String getEventKey()
+		{
+			return "EQUATION";
+		}
+
+		@Override
+		public void handle(String line)
+		{
+			if (StringUtils.isNotBlank(line))
+			{
+				String cleanedLine = StringUtils.trim(line);
+				this.keggReaction.setEquation(cleanedLine);
+			}
+		}
+	}
+
+	private class ReactionClassesHandler extends AbstractHandler
+	{
+		public ReactionClassesHandler(KeggReaction keggReaction)
+		{
+			super(keggReaction);
+		}
+
+		@Override
+		public String getEventKey()
+		{
+			return "RCLASS";
+		}
+
+		@Override
+		public void handle(String line)
+		{
+			if (StringUtils.isNotBlank(line))
+			{
+				this.keggReaction	.getReactionClasses()
+									.add(line);
+			}
+		}
+	}
+
+	private class EnzymeHandler extends AbstractHandler
+	{
+		public EnzymeHandler(KeggReaction keggReaction)
+		{
+			super(keggReaction);
+		}
+
+		@Override
+		public String getEventKey()
+		{
+			return "ENZYME";
+		}
+
+		@Override
+		public void handle(String line)
+		{
+			if (StringUtils.isNotBlank(line))
+			{
+				String[] enzymes = StringUtils.split(line, " ");
+				this.keggReaction	.getEnzymes()
+									.addAll(Arrays.asList(enzymes));
+			}
+		}
+	}
+
+	private class OrthologyHandler extends AbstractHandler
+	{
+		public OrthologyHandler(KeggReaction keggReaction)
+		{
+			super(keggReaction);
+		}
+
+		@Override
+		public String getEventKey()
+		{
+			return "ORTHOLOGY";
+		}
+
+		@Override
+		public void handle(String line)
+		{
+			if (StringUtils.isNotBlank(line))
+			{
+				this.keggReaction	.getOrthology()
+									.add(line);
+			}
+		}
+	}
+
+	public List<IMEnzyme> parse()
 	{
 		List<KeggReaction> reactions = new ArrayList<>();
 		{
@@ -115,7 +268,6 @@ public class KeggReactionsParserTest
 												.collect(Collectors.toList()))
 			{
 				KeggReaction keggReaction = this.collectReaction(reactionId);
-				System.out.println(JSONHelper.prettyPrint(keggReaction));
 
 				reactions.add(keggReaction);
 			}
@@ -198,6 +350,17 @@ public class KeggReactionsParserTest
 			enzymes.add(imEnzyme);
 		}
 
+		return enzymes;
+	}
+
+	private KeggReaction collectReaction(String reactionId)
+	{
+		return KeggUtils.getReaction(reactionId);
+	}
+
+	private Set<String> collectReactionIds()
+	{
+		return KeggUtils.getReactionIds();
 	}
 
 	private List<IMChemical> convertToIMChemical(List<String> rawChemicals)
@@ -208,41 +371,6 @@ public class KeggReactionsParserTest
 							.map((rawChemical) -> new IMChemical()	.setName(rawChemical)
 																	.setId(rawChemical))
 							.collect(Collectors.toList());
-	}
-
-	@Test
-	@Ignore
-	public void test()
-	{
-		Set<String> reactionIds = this.collectReactionIds();
-		for (String reactionId : reactionIds)
-		{
-			KeggReaction keggReaction = this.collectReaction(reactionId);
-			System.out.println(JSONHelper.prettyPrint(keggReaction));
-		}
-
-	}
-
-	@Test
-
-	public void testDB()
-	{
-		List<IMEnzyme> enzymes = this.parser.parse();
-		System.out.println(JSONHelper.prettyPrint(enzymes	.stream()
-															.limit(10)
-															.collect(Collectors.toList())));
-
-	}
-
-	private KeggReaction collectReaction(String reactionId)
-	{
-		return KeggUtils.getReaction(reactionId);
-	}
-
-	private Set<String> collectReactionIds()
-	{
-
-		return KeggUtils.getReactionIds();
 	}
 
 }
