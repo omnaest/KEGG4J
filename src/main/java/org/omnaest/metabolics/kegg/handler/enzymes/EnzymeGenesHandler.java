@@ -61,7 +61,7 @@ public class EnzymeGenesHandler extends AbstractEnzymeHandler
 					String organism = organismAndGenesWithLoci[0];
 					String genesWithLoci = organismAndGenesWithLoci[1];
 
-					Matcher matcher = Pattern	.compile("([0-9]+)\\(([0-9a-zA-Z]*)\\)")
+					Matcher matcher = Pattern	.compile("([0-9_a-zA-Z\\.]+)\\(([0-9a-zA-Z]*)\\)")
 												.matcher(genesWithLoci);
 					while (matcher.find())
 					{
