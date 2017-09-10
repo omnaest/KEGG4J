@@ -46,6 +46,10 @@ import org.omnaest.metabolics.kegg.model.KeggReaction;
 import org.omnaest.metabolics.kegg.utils.filecache.TextListWithFileCache;
 import org.omnaest.metabolics.kegg.utils.filecache.TextWithFileCache;
 
+/**
+ * @see KeggRestApiUtils
+ * @author Omnaest
+ */
 public class KeggUtils
 {
 	public static String CACHE_FOLDER = "kegg_data";
