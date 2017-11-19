@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -35,7 +36,9 @@ import org.omnaest.metabolics.kegg.KeggUtils;
 import org.omnaest.metabolics.kegg.handler.TextHandler.Handler;
 import org.omnaest.metabolics.kegg.intermodel.IMChemical;
 import org.omnaest.metabolics.kegg.intermodel.IMEnzyme;
+import org.omnaest.metabolics.kegg.intermodel.IMGene;
 import org.omnaest.metabolics.kegg.intermodel.IMReaction;
+import org.omnaest.metabolics.kegg.model.KeggEnzyme;
 import org.omnaest.metabolics.kegg.model.KeggReaction;
 import org.omnaest.metabolics.kegg.utils.JSONHelper;
 import org.slf4j.Logger;
@@ -264,7 +267,6 @@ public class KeggReactionParser
 		{
 			Set<String> reactionIds = this.collectReactionIds();
 			for (String reactionId : reactionIds.stream()
-												// .limit(100)
 												.collect(Collectors.toList()))
 			{
 				KeggReaction keggReaction = this.collectReaction(reactionId);
@@ -294,17 +296,38 @@ public class KeggReactionParser
 		}
 
 		//
+		Map<String, KeggEnzyme> enzymeIdToEnzymeMap = this	.getEnzymes()
+															.stream()
+															.collect(Collectors.toMap(keggEnzyme -> keggEnzyme.getId(), keggEnzyme -> keggEnzyme));
+
+		//
 		List<IMEnzyme> enzymes = new ArrayList<>();
-		for (String enzymeName : enzymeToReactionsMap.keySet())
+		for (String enzymeECNumber : enzymeToReactionsMap.keySet())
 		{
+			KeggEnzyme keggEnzyme = enzymeIdToEnzymeMap.get(enzymeECNumber);
+
 			IMEnzyme imEnzyme = new IMEnzyme();
 			{
 				//
-				imEnzyme.setId(enzymeName);
-				imEnzyme.setEcNumber(enzymeName);
+				imEnzyme.setId(enzymeECNumber);
+				imEnzyme.setEcNumber(enzymeECNumber);
+
+				if (keggEnzyme != null)
+				{
+					imEnzyme.setName(keggEnzyme.getName());
+					imEnzyme.setSynonyms(keggEnzyme	.getSynonoms()
+													.stream()
+													.collect(Collectors.toSet()));
+
+					//
+					imEnzyme.setGenes(keggEnzyme.getGenes()
+												.stream()
+												.map(keggGene -> new IMGene(keggGene.getGene(), keggGene.getOrganism()))
+												.collect(Collectors.toList()));
+				}
 
 				//
-				Set<KeggReaction> keggReactionsOfEnzyme = enzymeToReactionsMap.get(enzymeName);
+				Set<KeggReaction> keggReactionsOfEnzyme = enzymeToReactionsMap.get(enzymeECNumber);
 				for (KeggReaction keggReactionOfEnzyme : keggReactionsOfEnzyme)
 				{
 					IMReaction imReaction = new IMReaction();
@@ -351,6 +374,12 @@ public class KeggReactionParser
 		}
 
 		return enzymes;
+	}
+
+	private List<KeggEnzyme> getEnzymes()
+	{
+		return KeggUtils.getEnzymes()
+						.collect(Collectors.toList());
 	}
 
 	private KeggReaction collectReaction(String reactionId)

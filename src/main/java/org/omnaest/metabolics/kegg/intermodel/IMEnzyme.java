@@ -1,4 +1,4 @@
-/* 
+/*
 
 	Copyright 2017 Danny Kunz
 
@@ -13,19 +13,44 @@
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 	See the License for the specific language governing permissions and
 	limitations under the License.
-	
+
 
 */
 package org.omnaest.metabolics.kegg.intermodel;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 public class IMEnzyme
 {
 	private String			id;
+	private String			name;
+	private Set<String>		synonyms	= Collections.emptySet();
 	private String			ecNumber;
 	private Set<IMReaction>	reactions	= new LinkedHashSet<>();
+	private List<IMGene>	genes		= Collections.emptyList();
+
+	public String getName()
+	{
+		return this.name;
+	}
+
+	public void setName(String name)
+	{
+		this.name = name;
+	}
+
+	public Set<String> getSynonyms()
+	{
+		return this.synonyms;
+	}
+
+	public void setSynonyms(Set<String> synonyms)
+	{
+		this.synonyms = synonyms;
+	}
 
 	public String getId()
 	{
@@ -55,6 +80,16 @@ public class IMEnzyme
 	public void setReactions(Set<IMReaction> reactions)
 	{
 		this.reactions = reactions;
+	}
+
+	public List<IMGene> getGenes()
+	{
+		return this.genes;
+	}
+
+	public void setGenes(List<IMGene> genes)
+	{
+		this.genes = genes;
 	}
 
 }
