@@ -296,6 +296,13 @@ public class KeggReactionParser
 		}
 
 		//
+		Map<String, String> organismIdToName = KeggUtils.getOrganisms()
+														.stream()
+														.collect(Collectors.toMap(	organism -> organism.getId()
+																										.toUpperCase(),
+																					organism -> organism.getName()));
+
+		//
 		Map<String, KeggEnzyme> enzymeIdToEnzymeMap = this	.getEnzymes()
 															.stream()
 															.collect(Collectors.toMap(keggEnzyme -> keggEnzyme.getId(), keggEnzyme -> keggEnzyme));
@@ -322,7 +329,13 @@ public class KeggReactionParser
 					//
 					imEnzyme.setGenes(keggEnzyme.getGenes()
 												.stream()
-												.map(keggGene -> new IMGene(keggGene.getGene(), keggGene.getOrganism()))
+												.map(keggGene ->
+												{
+													String organismName = organismIdToName.getOrDefault(keggGene.getOrganism()
+																												.toUpperCase(),
+																										null);
+													return new IMGene(keggGene.getGene(), keggGene.getOrganism(), organismName);
+												})
 												.collect(Collectors.toList()));
 				}
 

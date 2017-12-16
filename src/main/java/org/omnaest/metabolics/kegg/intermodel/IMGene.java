@@ -22,12 +22,14 @@ public class IMGene
 {
 	private String	name;
 	private String	organism;
+	private String	organismName;
 
-	public IMGene(String name, String organism)
+	public IMGene(String name, String organism, String organismName)
 	{
 		super();
 		this.name = name;
 		this.organism = organism;
+		this.organismName = organismName;
 	}
 
 	public String getName()
@@ -40,10 +42,15 @@ public class IMGene
 		return this.organism;
 	}
 
+	public String getOrganismName()
+	{
+		return this.organismName;
+	}
+
 	@Override
 	public String toString()
 	{
-		return "IMGene [name=" + this.name + ", organism=" + this.organism + "]";
+		return "IMGene [name=" + this.name + ", organism=" + this.organism + ", organismName=" + this.organismName + "]";
 	}
 
 }
