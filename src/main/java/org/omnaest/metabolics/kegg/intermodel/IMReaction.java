@@ -23,38 +23,49 @@ import java.util.List;
 
 public class IMReaction
 {
-	private String				id;
-	private List<IMChemical>	educts		= new ArrayList<>();
-	private List<IMChemical>	products	= new ArrayList<>();
+    private String           id;
+    private boolean          reversible = false;
+    private List<IMChemical> educts     = new ArrayList<>();
+    private List<IMChemical> products   = new ArrayList<>();
 
-	public String getId()
-	{
-		return this.id;
-	}
+    public String getId()
+    {
+        return this.id;
+    }
 
-	public void setId(String id)
-	{
-		this.id = id;
-	}
+    public void setId(String id)
+    {
+        this.id = id;
+    }
 
-	public List<IMChemical> getEducts()
-	{
-		return this.educts;
-	}
+    public boolean isReversible()
+    {
+        return this.reversible;
+    }
 
-	public void setEducts(List<IMChemical> educts)
-	{
-		this.educts = educts;
-	}
+    public void setReversible(boolean reversible)
+    {
+        this.reversible = reversible;
+    }
 
-	public List<IMChemical> getProducts()
-	{
-		return this.products;
-	}
+    public List<IMChemical> getEducts()
+    {
+        return this.educts;
+    }
 
-	public void setProducts(List<IMChemical> products)
-	{
-		this.products = products;
-	}
+    public void setEducts(List<IMChemical> educts)
+    {
+        this.educts = educts;
+    }
+
+    public List<IMChemical> getProducts()
+    {
+        return this.products;
+    }
+
+    public void setProducts(List<IMChemical> products)
+    {
+        this.products = products;
+    }
 
 }
