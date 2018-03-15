@@ -143,11 +143,11 @@ public class KeggUtils
 
     public static class OrganismReference
     {
-        private String      id;
-        private String      name;
-        private Set<String> groups;
+        private String       id;
+        private String       name;
+        private List<String> groups;
 
-        public OrganismReference(String id, String name, Set<String> groups)
+        public OrganismReference(String id, String name, List<String> groups)
         {
             super();
             this.id = id;
@@ -165,7 +165,7 @@ public class KeggUtils
             return this.name;
         }
 
-        public Set<String> getGroups()
+        public List<String> getGroups()
         {
             return this.groups;
         }
@@ -235,9 +235,10 @@ public class KeggUtils
                 String joinedGroups = matcher.group(3);
                 if (StringUtils.isNotBlank(id))
                 {
-                    Set<String> groups = Arrays.asList(StringUtils.split(joinedGroups, ";"))
-                                               .stream()
-                                               .collect(Collectors.toSet());
+                    List<String> groups = Arrays.asList(StringUtils.split(joinedGroups, ";"))
+                                                .stream()
+                                                .distinct()
+                                                .collect(Collectors.toList());
                     organisms.add(new OrganismReference(id, name, groups));
                 }
             }

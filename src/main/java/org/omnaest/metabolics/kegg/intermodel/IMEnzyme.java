@@ -25,71 +25,82 @@ import java.util.Set;
 
 public class IMEnzyme
 {
-	private String			id;
-	private String			name;
-	private Set<String>		synonyms	= Collections.emptySet();
-	private String			ecNumber;
-	private Set<IMReaction>	reactions	= new LinkedHashSet<>();
-	private List<IMGene>	genes		= Collections.emptyList();
+    private String          id;
+    private String          name;
+    private Set<String>     synonyms  = Collections.emptySet();
+    private String          ecNumber;
+    private Set<IMReaction> reactions = new LinkedHashSet<>();
+    private List<IMGene>    genes     = Collections.emptyList();
+    private Set<IMOrganism> organisms = new LinkedHashSet<>();
 
-	public String getName()
-	{
-		return this.name;
-	}
+    public String getName()
+    {
+        return this.name;
+    }
 
-	public void setName(String name)
-	{
-		this.name = name;
-	}
+    public void setName(String name)
+    {
+        this.name = name;
+    }
 
-	public Set<String> getSynonyms()
-	{
-		return this.synonyms;
-	}
+    public Set<String> getSynonyms()
+    {
+        return this.synonyms;
+    }
 
-	public void setSynonyms(Set<String> synonyms)
-	{
-		this.synonyms = synonyms;
-	}
+    public void setSynonyms(Set<String> synonyms)
+    {
+        this.synonyms = synonyms;
+    }
 
-	public String getId()
-	{
-		return this.id;
-	}
+    public String getId()
+    {
+        return this.id;
+    }
 
-	public void setId(String id)
-	{
-		this.id = id;
-	}
+    public void setId(String id)
+    {
+        this.id = id;
+    }
 
-	public String getEcNumber()
-	{
-		return this.ecNumber;
-	}
+    public String getEcNumber()
+    {
+        return this.ecNumber;
+    }
 
-	public void setEcNumber(String ecNumber)
-	{
-		this.ecNumber = ecNumber;
-	}
+    public void setEcNumber(String ecNumber)
+    {
+        this.ecNumber = ecNumber;
+    }
 
-	public Set<IMReaction> getReactions()
-	{
-		return this.reactions;
-	}
+    public Set<IMReaction> getReactions()
+    {
+        return this.reactions;
+    }
 
-	public void setReactions(Set<IMReaction> reactions)
-	{
-		this.reactions = reactions;
-	}
+    public void setReactions(Set<IMReaction> reactions)
+    {
+        this.reactions = reactions;
+    }
 
-	public List<IMGene> getGenes()
-	{
-		return this.genes;
-	}
+    public List<IMGene> getGenes()
+    {
+        return this.genes;
+    }
 
-	public void setGenes(List<IMGene> genes)
-	{
-		this.genes = genes;
-	}
+    public void setGenes(List<IMGene> genes)
+    {
+        this.genes = genes;
+    }
+
+    public Set<IMOrganism> getOrganisms()
+    {
+        return this.organisms;
+    }
+
+    public void setOrganisms(Set<IMOrganism> organisms)
+    {
+        this.organisms = organisms;
+    }
 
 }

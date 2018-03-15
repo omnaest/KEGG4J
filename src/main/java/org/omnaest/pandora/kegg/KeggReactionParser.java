@@ -38,6 +38,7 @@ import org.omnaest.metabolics.kegg.handler.TextHandler.Handler;
 import org.omnaest.metabolics.kegg.intermodel.IMChemical;
 import org.omnaest.metabolics.kegg.intermodel.IMEnzyme;
 import org.omnaest.metabolics.kegg.intermodel.IMGene;
+import org.omnaest.metabolics.kegg.intermodel.IMOrganism;
 import org.omnaest.metabolics.kegg.intermodel.IMReaction;
 import org.omnaest.metabolics.kegg.model.KeggEnzyme;
 import org.omnaest.metabolics.kegg.model.KeggReaction;
@@ -340,6 +341,12 @@ public class KeggReactionParser
                                                     return new IMGene(keggGene.getGene(), keggGene.getOrganism(), organismName);
                                                 })
                                                 .collect(Collectors.toList()));
+
+                    imEnzyme.setOrganisms(keggEnzyme.getOrganisms()
+                                                    .stream()
+                                                    .map(organismId -> new IMOrganism(organismId.toUpperCase(),
+                                                                                      organismIdToName.getOrDefault(organismId.toUpperCase(), "")))
+                                                    .collect(Collectors.toSet()));
                 }
 
                 //
@@ -376,7 +383,7 @@ public class KeggReactionParser
                         }
                         else
                         {
-                            LOG.warn("Droped reaction: " + JSONHelper.prettyPrint(keggReactionOfEnzyme));
+                            LOG.warn("Dropped reaction: " + JSONHelper.prettyPrint(keggReactionOfEnzyme));
                         }
 
                         educts.addAll(this.convertToIMChemical(rawEducts));
@@ -414,8 +421,8 @@ public class KeggReactionParser
         return rawChemicals.stream()
                            .flatMap(new ChemicalMultiplierPrefixMapper())
                            .filter((rawChemical) -> StringUtils.isNotBlank(rawChemical))
-                           .map((rawChemical) -> new IMChemical().setName(rawChemical)
-                                                                 .setId(rawChemical))
+                           .map(rawChemical -> new IMChemical().setName(rawChemical)
+                                                               .setId(rawChemical))
                            .collect(Collectors.toList());
     }
 

@@ -18,6 +18,8 @@
 */
 package org.omnaest.metabolics.kegg;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.omnaest.metabolics.kegg.KeggUtils.OrganismReference;
 import org.omnaest.metabolics.kegg.KeggUtils.ReactionIdToReversibleMap;
 import org.omnaest.metabolics.kegg.model.KeggEnzyme;
 import org.omnaest.metabolics.kegg.utils.JSONHelper;
@@ -96,6 +99,17 @@ public class KeggUtilsTest
 
     @Test
     @Ignore
+    public void testGetOrganisms2() throws Exception
+    {
+        Set<OrganismReference> organisms = KeggUtils.getOrganisms()
+                                                    .stream()
+                                                    //                                         .map(organism -> organism.getId())
+                                                    .collect(Collectors.toSet());
+        System.out.println(JSONHelper.prettyPrint(organisms));
+    }
+
+    @Test
+    @Ignore
     public void testEnzymesOfSaccharomycetes() throws Exception
     {
         Set<String> organisms = KeggUtils.getOrganisms()
@@ -117,6 +131,53 @@ public class KeggUtilsTest
                       .map(id -> ".withEnzymes(Enzymes.EC_" + id.replaceAll("[\\.]", "_") + ")")
                       .collect(Collectors.toList())
                       .forEach(System.out::println);
+
+    }
+
+    @Test
+    @Ignore
+    public void testGetEnzyme2721() throws Exception
+    {
+        KeggEnzyme enzyme = KeggUtils.getEnzyme("2.7.2.1");
+
+        //        System.out.println(enzyme);
+
+        assertTrue(enzyme.getGenes()
+                         .stream()
+                         .anyMatch(gene -> gene.getOrganism()
+                                               .equals("FPR")));
+    }
+
+    @Test
+    @Ignore
+    public void testEnzymesOfFaecalibacterium() throws Exception
+    {
+        Set<String> organisms = KeggUtils.getOrganisms()
+                                         .stream()
+                                         .filter(organism -> organism.getGroups()
+                                                                     .contains("Faecalibacterium"))
+                                         .map(organism -> organism.getId())
+                                         .map(String::toLowerCase)
+                                         .collect(Collectors.toSet());
+        System.out.println(organisms);
+        List<String> enzymesOfFaecalibacterium = KeggUtils.getEnzymeIds()
+                                                          .stream()
+                                                          .map(enzymeId -> KeggUtils.getEnzyme(enzymeId))
+                                                          .peek(enzyme ->
+                                                          {
+                                                              if (enzyme.getId()
+                                                                        .equals("2.7.2.1"))
+                                                              {
+                                                                  System.out.println(enzyme);
+                                                              }
+                                                          })
+                                                          .filter(enzyme -> enzyme.getGenes()
+                                                                                  .stream()
+                                                                                  .anyMatch(gene -> organisms.contains(StringUtils.lowerCase(gene.getOrganism()))))
+                                                          .map(enzyme -> enzyme.getId())
+                                                          .collect(Collectors.toList());
+
+        System.out.println(enzymesOfFaecalibacterium);
 
     }
 

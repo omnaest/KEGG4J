@@ -28,49 +28,65 @@ import org.slf4j.LoggerFactory;
 
 public class EnzymeGenesHandler extends AbstractEnzymeHandler
 {
-	private final static Logger LOG = LoggerFactory.getLogger(EnzymeGenesHandler.class);
+    private final static Logger LOG = LoggerFactory.getLogger(EnzymeGenesHandler.class);
 
-	public EnzymeGenesHandler(KeggEnzyme keggEnzyme)
-	{
-		super(keggEnzyme);
-	}
+    public EnzymeGenesHandler(KeggEnzyme keggEnzyme)
+    {
+        super(keggEnzyme);
+    }
 
-	@Override
-	public String getEventKey()
-	{
-		return "GENES";
-	}
+    @Override
+    public String getEventKey()
+    {
+        return "GENES";
+    }
 
-	@Override
-	public void handle(String line)
-	{
-		if (StringUtils.isNotBlank(line))
-		{
-			String cleanedLine = StringUtils.trim(line);
+    @Override
+    public void handle(String line)
+    {
+        if (StringUtils.isNotBlank(line))
+        {
+            String cleanedLine = StringUtils.trim(line);
 
-			if (StringUtils.isNotBlank(cleanedLine))
-			{
-				String[] organismAndGenesWithLoci = StringUtils.split(cleanedLine, ":");
+            if (StringUtils.isNotBlank(cleanedLine))
+            {
+                //HSA: 55902(ACSS2) 84532(ACSS1)
+                //FGR: FGSG_11925
+                String[] organismAndGenesWithLoci = StringUtils.split(cleanedLine, ":");
 
-				if (organismAndGenesWithLoci.length != 2)
-				{
-					LOG.warn("Incorrect gene format for enzyme: " + this.keggEnzyme.getName() + " " + cleanedLine);
-				}
-				else
-				{
-					String organism = organismAndGenesWithLoci[0];
-					String genesWithLoci = organismAndGenesWithLoci[1];
+                if (organismAndGenesWithLoci.length != 2)
+                {
+                    LOG.warn("Incorrect gene format for enzyme: " + this.keggEnzyme.getId() + ":" + this.keggEnzyme.getName() + " " + cleanedLine);
+                }
+                else
+                {
+                    String organism = organismAndGenesWithLoci[0];
+                    String genesWithLoci = organismAndGenesWithLoci[1];
 
-					Matcher matcher = Pattern	.compile("([0-9_a-zA-Z\\.]+)\\(([0-9a-zA-Z]*)\\)")
-												.matcher(genesWithLoci);
-					while (matcher.find())
-					{
-						String location = matcher.group(1);
-						String gene = matcher.group(2);
-						this.keggEnzyme.addGene(organism, gene, location);
-					}
-				}
-			}
-		}
-	}
+                    if (StringUtils.contains(genesWithLoci, "("))
+                    {
+                        String lociPattern = "([0-9_a-zA-Z\\.]+)";
+                        String genePattern = "\\(([0-9a-zA-Z]*)\\)";
+                        Matcher matcher = Pattern.compile(lociPattern + genePattern)
+                                                 .matcher(genesWithLoci);
+                        while (matcher.find())
+                        {
+                            String location = matcher.group(1);
+                            String gene = matcher.group(2);
+                            this.keggEnzyme.addGene(organism, gene, location);
+                            this.keggEnzyme.addOrganism(organism);
+                        }
+                    }
+                    else if (StringUtils.isNotBlank(organism))
+                    {
+                        this.keggEnzyme.addOrganism(organism);
+                    }
+                    else
+                    {
+                        LOG.warn("Missing organism: " + this.keggEnzyme.getId() + ":" + this.keggEnzyme.getName() + " " + cleanedLine);
+                    }
+                }
+            }
+        }
+    }
 }

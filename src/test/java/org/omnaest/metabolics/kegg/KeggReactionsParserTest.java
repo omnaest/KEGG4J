@@ -47,202 +47,202 @@ import org.slf4j.LoggerFactory;
 
 public class KeggReactionsParserTest
 {
-	private static Logger LOG = LoggerFactory.getLogger(KeggReactionsParserTest.class);
+    private static Logger LOG = LoggerFactory.getLogger(KeggReactionsParserTest.class);
 
-	public static class ChemicalMultiplierPrefixMapper implements Function<String, Stream<String>>
-	{
-		@Override
-		public Stream<String> apply(String chemical)
-		{
-			List<String> retlist = new ArrayList<>();
-			boolean hasMultiplierPrefix = Pattern	.compile("^[0-9]+ ")
-													.matcher(chemical)
-													.find();
-			if (hasMultiplierPrefix)
-			{
-				String[] multiplierAndChemical = chemical.split(" ", 2);
-				if (multiplierAndChemical.length == 2)
-				{
-					int multiplier = Integer.valueOf(multiplierAndChemical[0]);
-					String iChemical = multiplierAndChemical[1];
-					for (int ii = 0; ii < multiplier; ii++)
-					{
-						retlist.add(iChemical);
-					}
-				}
-			}
-			else
-			{
-				retlist.add(chemical);
-			}
-			return retlist.stream();
-		}
-	}
+    public static class ChemicalMultiplierPrefixMapper implements Function<String, Stream<String>>
+    {
+        @Override
+        public Stream<String> apply(String chemical)
+        {
+            List<String> retlist = new ArrayList<>();
+            boolean hasMultiplierPrefix = Pattern.compile("^[0-9]+ ")
+                                                 .matcher(chemical)
+                                                 .find();
+            if (hasMultiplierPrefix)
+            {
+                String[] multiplierAndChemical = chemical.split(" ", 2);
+                if (multiplierAndChemical.length == 2)
+                {
+                    int multiplier = Integer.valueOf(multiplierAndChemical[0]);
+                    String iChemical = multiplierAndChemical[1];
+                    for (int ii = 0; ii < multiplier; ii++)
+                    {
+                        retlist.add(iChemical);
+                    }
+                }
+            }
+            else
+            {
+                retlist.add(chemical);
+            }
+            return retlist.stream();
+        }
+    }
 
-	private KeggReactionParser parser = new KeggReactionParser();
+    private KeggReactionParser parser = new KeggReactionParser();
 
-	@Test
-	@Ignore
-	public void testFileCache()
-	{
-		List<String> elements = new TextListWithFileCache("reactions.txt")	.setProvider(() -> Arrays.asList("a", "b", "cd"))
-																			.get();
-		System.out.println(elements);
-	}
+    @Test
+    @Ignore
+    public void testFileCache()
+    {
+        List<String> elements = new TextListWithFileCache("reactions.txt").setProvider(() -> Arrays.asList("a", "b", "cd"))
+                                                                          .get();
+        System.out.println(elements);
+    }
 
-	@Test
-	@Ignore
-	public void testIMReactionTemplateChemicalsParsing()
-	{
-		List<IMChemical> chemicals = this.convertToIMChemical(Arrays.asList(StringUtils.splitByWholeSeparator("Hydrogen peroxide + NADH + H+", " + ")));
-		for (IMChemical chemical : chemicals)
-		{
-			IMChemicalTemplateWrapper chemicalTemplateWrapper = new IMChemicalTemplateWrapper(chemical);
-			String compatibleName = chemicalTemplateWrapper.getEnumCompatibleName();
-			System.out.println(compatibleName);
-		}
-	}
+    @Test
+    @Ignore
+    public void testIMReactionTemplateChemicalsParsing()
+    {
+        List<IMChemical> chemicals = this.convertToIMChemical(Arrays.asList(StringUtils.splitByWholeSeparator("Hydrogen peroxide + NADH + H+", " + ")));
+        for (IMChemical chemical : chemicals)
+        {
+            IMChemicalTemplateWrapper chemicalTemplateWrapper = new IMChemicalTemplateWrapper(chemical);
+            String compatibleName = chemicalTemplateWrapper.getEnumCompatibleName();
+            System.out.println(compatibleName);
+        }
+    }
 
-	@Test
-	@Ignore
-	public void testCodeGeneration() throws IOException
-	{
-		List<KeggReaction> reactions = new ArrayList<>();
-		{
-			Set<String> reactionIds = this.collectReactionIds();
-			for (String reactionId : reactionIds.stream()
-												// .limit(100)
-												.collect(Collectors.toList()))
-			{
-				KeggReaction keggReaction = this.collectReaction(reactionId);
-				System.out.println(JSONHelper.prettyPrint(keggReaction));
+    @Test
+    @Ignore
+    public void testCodeGeneration() throws IOException
+    {
+        List<KeggReaction> reactions = new ArrayList<>();
+        {
+            Set<String> reactionIds = this.collectReactionIds();
+            for (String reactionId : reactionIds.stream()
+                                                // .limit(100)
+                                                .collect(Collectors.toList()))
+            {
+                KeggReaction keggReaction = this.collectReaction(reactionId);
+                System.out.println(JSONHelper.prettyPrint(keggReaction));
 
-				reactions.add(keggReaction);
-			}
-		}
+                reactions.add(keggReaction);
+            }
+        }
 
-		//
-		SortedMap<String, Set<KeggReaction>> enzymeToReactionsMap = new TreeMap<>();
-		for (KeggReaction reaction : reactions)
-		{
-			Set<String> enzymes = reaction	.getEnzymes()
-											.stream()
-											.collect(Collectors.toSet());
-			for (String enzyme : enzymes)
-			{
-				Set<KeggReaction> reactionsOfEnzyme = enzymeToReactionsMap.get(enzyme);
-				if (reactionsOfEnzyme == null)
-				{
-					reactionsOfEnzyme = new LinkedHashSet<>();
-					enzymeToReactionsMap.put(enzyme, reactionsOfEnzyme);
-				}
+        //
+        SortedMap<String, Set<KeggReaction>> enzymeToReactionsMap = new TreeMap<>();
+        for (KeggReaction reaction : reactions)
+        {
+            Set<String> enzymes = reaction.getEnzymes()
+                                          .stream()
+                                          .collect(Collectors.toSet());
+            for (String enzyme : enzymes)
+            {
+                Set<KeggReaction> reactionsOfEnzyme = enzymeToReactionsMap.get(enzyme);
+                if (reactionsOfEnzyme == null)
+                {
+                    reactionsOfEnzyme = new LinkedHashSet<>();
+                    enzymeToReactionsMap.put(enzyme, reactionsOfEnzyme);
+                }
 
-				reactionsOfEnzyme.add(reaction);
-			}
-		}
+                reactionsOfEnzyme.add(reaction);
+            }
+        }
 
-		//
-		List<IMEnzyme> enzymes = new ArrayList<>();
-		for (String enzymeName : enzymeToReactionsMap.keySet())
-		{
-			IMEnzyme imEnzyme = new IMEnzyme();
-			{
-				//
-				imEnzyme.setId(enzymeName);
-				imEnzyme.setEcNumber(enzymeName);
+        //
+        List<IMEnzyme> enzymes = new ArrayList<>();
+        for (String enzymeName : enzymeToReactionsMap.keySet())
+        {
+            IMEnzyme imEnzyme = new IMEnzyme();
+            {
+                //
+                imEnzyme.setId(enzymeName);
+                imEnzyme.setEcNumber(enzymeName);
 
-				//
-				Set<KeggReaction> keggReactionsOfEnzyme = enzymeToReactionsMap.get(enzymeName);
-				for (KeggReaction keggReactionOfEnzyme : keggReactionsOfEnzyme)
-				{
-					IMReaction imReaction = new IMReaction();
-					{
-						//
-						imReaction.setId(keggReactionOfEnzyme.getId());
+                //
+                Set<KeggReaction> keggReactionsOfEnzyme = enzymeToReactionsMap.get(enzymeName);
+                for (KeggReaction keggReactionOfEnzyme : keggReactionsOfEnzyme)
+                {
+                    IMReaction imReaction = new IMReaction();
+                    {
+                        //
+                        imReaction.setId(keggReactionOfEnzyme.getId());
 
-						//
-						List<IMChemical> educts = imReaction.getEducts();
-						List<IMChemical> products = imReaction.getProducts();
+                        //
+                        List<IMChemical> educts = imReaction.getEducts();
+                        List<IMChemical> products = imReaction.getProducts();
 
-						List<String> rawEducts = new ArrayList<>();
-						List<String> rawProducts = new ArrayList<>();
-						String equation = keggReactionOfEnzyme.getDefinition();
-						String[] eductsAndProducts = StringUtils.split(equation, "<=>");
-						if (eductsAndProducts.length == 2)
-						{
-							String[] splittedEducts = StringUtils.splitByWholeSeparator(eductsAndProducts[0], " + ");
-							String[] splittedProducts = StringUtils.splitByWholeSeparator(eductsAndProducts[1], " + ");
+                        List<String> rawEducts = new ArrayList<>();
+                        List<String> rawProducts = new ArrayList<>();
+                        String equation = keggReactionOfEnzyme.getDefinition();
+                        String[] eductsAndProducts = StringUtils.split(equation, "<=>");
+                        if (eductsAndProducts.length == 2)
+                        {
+                            String[] splittedEducts = StringUtils.splitByWholeSeparator(eductsAndProducts[0], " + ");
+                            String[] splittedProducts = StringUtils.splitByWholeSeparator(eductsAndProducts[1], " + ");
 
-							for (String rawEduct : splittedEducts)
-							{
-								rawEducts.add(StringUtils.trim(rawEduct));
-							}
-							for (String rawProduct : splittedProducts)
-							{
-								rawProducts.add(StringUtils.trim(rawProduct));
-							}
-						}
-						else
-						{
-							LOG.warn("Droped reaction: " + JSONHelper.prettyPrint(keggReactionOfEnzyme));
-						}
+                            for (String rawEduct : splittedEducts)
+                            {
+                                rawEducts.add(StringUtils.trim(rawEduct));
+                            }
+                            for (String rawProduct : splittedProducts)
+                            {
+                                rawProducts.add(StringUtils.trim(rawProduct));
+                            }
+                        }
+                        else
+                        {
+                            LOG.warn("Droped reaction: " + JSONHelper.prettyPrint(keggReactionOfEnzyme));
+                        }
 
-						educts.addAll(this.convertToIMChemical(rawEducts));
-						products.addAll(this.convertToIMChemical(rawProducts));
-					}
-					imEnzyme.getReactions()
-							.add(imReaction);
+                        educts.addAll(this.convertToIMChemical(rawEducts));
+                        products.addAll(this.convertToIMChemical(rawProducts));
+                    }
+                    imEnzyme.getReactions()
+                            .add(imReaction);
 
-				}
-			}
-			enzymes.add(imEnzyme);
-		}
+                }
+            }
+            enzymes.add(imEnzyme);
+        }
 
-	}
+    }
 
-	private List<IMChemical> convertToIMChemical(List<String> rawChemicals)
-	{
-		return rawChemicals	.stream()
-							.flatMap(new ChemicalMultiplierPrefixMapper())
-							.filter((rawChemical) -> StringUtils.isNotBlank(rawChemical))
-							.map((rawChemical) -> new IMChemical()	.setName(rawChemical)
-																	.setId(rawChemical))
-							.collect(Collectors.toList());
-	}
+    private List<IMChemical> convertToIMChemical(List<String> rawChemicals)
+    {
+        return rawChemicals.stream()
+                           .flatMap(new ChemicalMultiplierPrefixMapper())
+                           .filter((rawChemical) -> StringUtils.isNotBlank(rawChemical))
+                           .map((rawChemical) -> new IMChemical().setName(rawChemical)
+                                                                 .setId(rawChemical))
+                           .collect(Collectors.toList());
+    }
 
-	@Test
-	@Ignore
-	public void test()
-	{
-		Set<String> reactionIds = this.collectReactionIds();
-		for (String reactionId : reactionIds)
-		{
-			KeggReaction keggReaction = this.collectReaction(reactionId);
-			System.out.println(JSONHelper.prettyPrint(keggReaction));
-		}
+    @Test
+    @Ignore
+    public void test()
+    {
+        Set<String> reactionIds = this.collectReactionIds();
+        for (String reactionId : reactionIds)
+        {
+            KeggReaction keggReaction = this.collectReaction(reactionId);
+            System.out.println(JSONHelper.prettyPrint(keggReaction));
+        }
 
-	}
+    }
 
-	@Test
+    @Test
+    @Ignore
+    public void testDB()
+    {
+        List<IMEnzyme> enzymes = this.parser.parse();
+        System.out.println(JSONHelper.prettyPrint(enzymes.stream()
+                                                         .limit(10)
+                                                         .collect(Collectors.toList())));
 
-	public void testDB()
-	{
-		List<IMEnzyme> enzymes = this.parser.parse();
-		System.out.println(JSONHelper.prettyPrint(enzymes	.stream()
-															.limit(10)
-															.collect(Collectors.toList())));
+    }
 
-	}
+    private KeggReaction collectReaction(String reactionId)
+    {
+        return KeggUtils.getReaction(reactionId);
+    }
 
-	private KeggReaction collectReaction(String reactionId)
-	{
-		return KeggUtils.getReaction(reactionId);
-	}
+    private Set<String> collectReactionIds()
+    {
 
-	private Set<String> collectReactionIds()
-	{
-
-		return KeggUtils.getReactionIds();
-	}
+        return KeggUtils.getReactionIds();
+    }
 
 }
