@@ -338,14 +338,18 @@ public class KeggReactionParser
                                                     String organismName = organismIdToName.getOrDefault(keggGene.getOrganism()
                                                                                                                 .toUpperCase(),
                                                                                                         null);
-                                                    return new IMGene(keggGene.getGene(), keggGene.getOrganism(), organismName);
+                                                    return new IMGene(keggGene.getGene()
+                                                                              .toUpperCase(),
+                                                                      keggGene.getOrganism()
+                                                                              .toUpperCase(),
+                                                                      organismName);
                                                 })
                                                 .collect(Collectors.toList()));
 
                     imEnzyme.setOrganisms(keggEnzyme.getOrganisms()
                                                     .stream()
                                                     .map(organismId -> new IMOrganism(organismId.toUpperCase(),
-                                                                                      organismIdToName.getOrDefault(organismId.toUpperCase(), "")))
+                                                                                      organismIdToName.getOrDefault(organismId.toUpperCase(), null)))
                                                     .collect(Collectors.toSet()));
                 }
 

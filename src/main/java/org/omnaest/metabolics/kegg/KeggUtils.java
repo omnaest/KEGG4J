@@ -459,7 +459,7 @@ public class KeggUtils
             return new ReactionIdToReversibleMap(map);
         })
                                                                       .withFileCache(new File(CACHE_FOLDER + "/reactionToReversible.json"),
-                                                                                     JSONHelper.serializer(ReactionIdToReversibleMap.class),
+                                                                                     JSONHelper.serializer(),
                                                                                      JSONHelper.deserializer(ReactionIdToReversibleMap.class));
 
         return cache.get();
